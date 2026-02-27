@@ -67,3 +67,22 @@ CREATE TABLE users (
 关键词不区分大小写： SELECT 和 select 是一样的，但为了可读性，建议关键词大写，表名/字段名小写。
 
 删库跑路警告： 执行 UPDATE 或 DELETE 时，一定要先核对 WHERE 条件，防止误杀整张表的数据。
+
+## 常见关键词
+| 执行顺序 | 关键字 | 数据库在干什么？ | 实战用法指南（怎么写） |
+| :--- | :--- | :--- | :--- |
+| 1 | FROM | 锁定数据源 | `FROM table_name`：指定你要从哪张表拿数据。 |
+| 2 | ON / JOIN | 多表关联 | `JOIN table2 ON table1.id = table2.sid`：通过公共列把两张表拼成一张大表。 |
+| 3 | WHERE | 初次过滤 | `WHERE age > 18`：在分组前排除掉不符合条件的原始行。 |
+| 4 | GROUP BY | 聚合分类 | `GROUP BY department`：把数据按某列（如部门、性别）切成一个个“小盒子”。 |
+| 5 | HAVING | 二次过滤 | `HAVING COUNT(*) > 5`：专门过滤分组后的结果（比如只看人数多于 5 人的部门）。 |
+| 6 | SELECT | 提取字段 | `SELECT name, price`：从处理好的数据里挑出要展示的列，或者进行计算。 |
+| 7 | DISTINCT | 结果去重 | `SELECT DISTINCT city`：把选出来的结果里一模一样的行删掉，只留一份。 |
+| 8 | ORDER BY | 最终排序 | `ORDER BY price DESC`：按某列排队。DESC 降序，ASC 升序。 |
+| 9 | LIMIT | 结果截取 | `LIMIT 5 OFFSET 10`：跳过前 10 行，只取接下来的 5 行（常用于分页）。 |
+
+## 字符串处理与过滤
+| 知识点 | 关键字 / 语法 | 说明 |
+| :--- | :--- | :--- |
+| 计算字节长度 | `LENGTH(column)` | 返回字段内容的字节长度。 |
+| 计算字符长度 | `CHAR_LENGTH(column)` | 返回字段内容的字符个数（最推荐用于统计字数）。 |
