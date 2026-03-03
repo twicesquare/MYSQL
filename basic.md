@@ -199,3 +199,24 @@ WHERE status = 'Active'        -- 1. 先排除离职员工
 GROUP BY department            -- 2. 按部门分组
 HAVING AVG(salary) > 5000;     -- 3. 在分组结果中筛选平均分
 ```
+
+## 标量子查询
+```
+SELECT 
+    contest_id, 
+    ROUND(COUNT(user_id) * 100 / (SELECT COUNT(*) FROM Users), 2) AS percentage
+FROM Register
+GROUP BY contest_id
+ORDER BY percentage DESC, contest_id ASC;
+```
+**`(SELECT COUNT(*) FROM Users)`**
+
+这叫标量子查询。它会先跑出来一个固定的数字（比如总共 3 个用户），然后像一个常量一样，让每个赛事的报名人数去乘以它。
+
+**`COUNT(user_id)`**
+
+因为我们已经 `GROUP BY contest_id` 了，所以这里的 COUNT 只会数这一个比赛里有多少人。
+
+**乘 100 的位置**
+
+在 SQL 中，为了避免某些数据库把 1/3 直接截断成 0，习惯上我们会先乘 100 再做除法。
