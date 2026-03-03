@@ -86,3 +86,116 @@ CREATE TABLE users (
 | :--- | :--- | :--- |
 | 计算字节长度 | `LENGTH(column)` | 返回字段内容的字节长度。 |
 | 计算字符长度 | `CHAR_LENGTH(column)` | 返回字段内容的字符个数（最推荐用于统计字数）。 |
+
+## 笛卡尔积
+
+笛卡尔积	CROSS JOIN，将左表的每一行与右表的每一行组合，生成所有可能的配对。
+
+```
+SELECT 
+    s.student_id, 
+    s.student_name, 
+    sub.subject_name, 
+    COUNT(e.student_id) AS attended_exams
+FROM Students s
+CROSS JOIN Subjects sub
+LEFT JOIN Examinations e 
+    ON s.student_id = e.student_id 
+    AND sub.subject_name = e.subject_name
+GROUP BY s.student_id, sub.subject_name
+ORDER BY s.student_id, subject_name;
+```
+
+**1. 笛卡尔积 (CROSS JOIN) —— 生成“考勤表”底本**
+
+这一步是为了保证：即使学生“张三”没参加过“音乐”考试，结果里也会出现 张三 | 音乐 | 0。
+
+**2. 双条件左连接 (LEFT JOIN)**
+
+连接条件必须同时满足 ID相同 且 科目相同。
+
+如果匹配上了，`e.student_id` 就有值。
+
+如果没匹配上（没去考试），`e.student_id` 就是 NULL。
+
+**3. 分组统计 (GROUP BY)**
+
+`GROUP BY s.student_id, sub.subject_name`
+
+这就像是在白纸上画格子，每个格子代表“某人-某课”。COUNT(e.student_id) 会数一数每个格子里有多少条实际的考试记录。
+
+## 表限定符（Qualifiers）的使用
+| 场景 | 是否加前缀 | 示例 | 目的 |
+| :--- | :--- | :--- | :--- |
+| 多表同名字段 | 必须加 | s.student_id = e.student_id | 消除歧义（Ambiguity） |
+| 多表唯一字段 | 强烈建议加 | s.student_name | 提高可读性，防止未来表结构变动报错 |
+| 单表查询 | 不需加 | SELECT name FROM Students | 简化代码 |
+| 别名定义处 | 禁止加 | FROM Students AS s | 此处是定义别名，不是使用别名 |
+
+## 自关联 (Self Join)
+```
+SELECT m.name
+FROM Employee AS e
+JOIN Employee AS m ON e.managerId = m.id
+GROUP BY m.id, m.name
+HAVING COUNT(e.id) >= 5;
+```
+逻辑：通过 `e.managerId = m.id` 把员工和他的经理拼在一行，然后按经理分组统计下属数量。
+
+## 常用的五大聚合函数
+
+| 函数      | 说明                              | 注意事项                                      |
+| :-------- | :-------------------------------- | :-------------------------------------------- |
+| COUNT()   | 统计行数或非空值的个数            | COUNT(*) 统计总行数；COUNT(列名) 统计该列非 NULL 的行数。 |
+| SUM()     | 求和                              | 只能作用于数字类型。                          |
+| AVG()     | 求平均值                          | 结果会自动处理为浮点数。                      |
+| MAX()     | 求最大值                          | 可用于数字、字符串（按字母顺序）和日期。      |
+| MIN()     | 求最小值                          | 同上。                                        |
+
+### 注意事项
+#### 去重聚合 (DISTINCT)
+如果你想统计有多少个不同的城市，可以在函数内加 DISTINCT：
+
+`SELECT COUNT(DISTINCT city) FROM Users;`
+
+#### 布尔聚合 (MySQL 特有)
+在 MySQL 中，True 被视为 1，False 被视为 0。我们可以利用这一点统计符合条件的行数：
+
+`SELECT SUM(score > 60) AS pass_count FROM Students;`
+
+(这比写 CASE WHEN 简洁得多！)
+
+#### 聚合函数中的 NULL 处理
+如果某组的所有值都是 NULL：
+
+SUM 会返回 NULL。
+
+COUNT 会返回 0。
+
+**建议：配合 `IFNULL(SUM(col), 0)` 来确保返回一个确定的数值。**
+
+### sum的用法
+```
+SELECT 
+    s.user_id, 
+    ROUND(IFNULL(SUM(c.action = 'confirmed') / COUNT(*), 0), 2) AS confirmation_rate
+FROM Signups s
+LEFT JOIN Confirmations c 
+    ON s.user_id = c.user_id
+GROUP BY s.user_id;
+```
+
+## WHERE vs HAVING (过滤)
+
+WHERE：在分组前过滤。它直接作用于原始表中的行，不能使用聚合函数（因为此时还没开始聚合）。
+
+HAVING：在分组后过滤。它作用于聚合后的结果。
+
+示例：查找平均工资大于 5000 的部门
+```
+SELECT department, AVG(salary)
+FROM Employees
+WHERE status = 'Active'        -- 1. 先排除离职员工
+GROUP BY department            -- 2. 按部门分组
+HAVING AVG(salary) > 5000;     -- 3. 在分组结果中筛选平均分
+```
