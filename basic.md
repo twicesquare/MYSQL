@@ -300,3 +300,75 @@ FROM Orders;
 
 ### 空值防御：`IFNULL()` 和 `COALESCE()`
 `IFNULL(val, 0)`：如果 val 是 NULL，就把它变成 0。常用于防止计算报错。
+
+## 高级字符串函数
+### `TRIM()`：去污小能手
+不仅可以去空格，还能去掉指定的首尾字符。
+
+`TRIM('  hello  ') → 'hello'`
+
+`TRIM(LEADING '0' FROM '000123') → '123'`（在 MySQL 中常用于去除前导 0）
+
+### `REPLACE()`：全局替换
+`REPLACE('123-456-789', '-', '') → '123456789'`
+
+### `LEFT()` / `RIGHT()`：快速截取
+`LEFT('2024-03-01', 4) → '2024'`（等同于截取年份）
+
+### `INSTR()` / `LOCATE()`：定位坐标
+返回子串在父串中出现的位置。
+
+`INSTR('apple@gmail.com', '@') → 6`
+
+高阶组合：配合 LEFT 提取邮箱用户名：`LEFT(email, INSTR(email, '@') - 1)`
+
+## 正则表达式 (REGEX)
+当 `LIKE`（只能用 % 和 _）不够用时，正则表达式就是你的救星。MySQL 中使用关键字 `REGEXP` 或 `REGEXP_LIKE()`。
+
+| 符号 | 含义 | 示例 | 匹配成功 |
+| :--- | :--- | :--- | :--- |
+| ^ | 匹配字符串开头 | ^A | "Apple", "Alice" |
+| $ | 匹配字符串结尾 | com$ | "https://www.google.com/search?q=google.com" |
+| . | 匹配任意单个字符 | b.g | "big", "bag", "bug" |
+| [] | 匹配括号内的任一字符 | [aeiou] | 匹配任意元音字母 |
+| * | 匹配前一个字符 0 次或多次 | ab* | "a", "ab", "abbb" |
+| \| | 逻辑或（OR） | cat\|dog | "cat", "dog" |
+
+**筛选以大写字母开头，中间有数字，结尾是 .txt 的文件名**
+```
+WHERE file_name REGEXP '^[A-Z].*[0-9].*\\.txt$'
+```
+
+## 核心子句
+
+### `CASE WHEN`：SQL 里的 if-else
+这是在 SELECT 中实现逻辑分支最标准的方法。
+```
+SELECT 
+    name,
+    CASE 
+        WHEN score >= 90 THEN '优秀'
+        WHEN score >= 60 THEN '及格'
+        ELSE '不及格'
+    END AS grade
+FROM Results;
+```
+
+### `HAVING`
+
+WHERE：在“分堆”之前过滤原始行。
+
+HAVING：在“分堆”之后过滤统计结果（如：找平均分大于 80 的组）。
+
+### `WITH` (CTE 公用表表达式)
+
+如果你的子查询套了三四层，代码会变得像“洋葱”一样难看。`WITH` 可以让你把子查询提出来，起个名字，像临时表一样使用。
+
+```
+WITH OrderCount AS (
+    SELECT customer_id, COUNT(*) as total_orders
+    FROM Orders
+    GROUP BY customer_id
+)
+SELECT * FROM OrderCount WHERE total_orders > 5;
+```
