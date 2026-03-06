@@ -220,3 +220,70 @@ ORDER BY percentage DESC, contest_id ASC;
 **乘 100 的位置**
 
 在 SQL 中，为了避免某些数据库把 1/3 直接截断成 0，习惯上我们会先乘 100 再做除法。
+
+## 日期操作
+### 日期格式化 `DATE_FORMAT(date, format)`
+这是最常用的功能，用于将日期转为特定的字符串格式（如月报、周报）。
+
+语法：`DATE_FORMAT(date, format)`
+
+常用格式符：
+
+`%Y`: 4位年份 (2024)
+
+`%m`: 月份 (01-12)
+
+`%d`: 天 (01-31)
+
+`%H`: 24小时制小时
+
+`%i`: 分钟
+
+### 日期加减：`DATE_ADD()` 和 `DATE_SUB()`
+
+用于计算“昨天”、“上个月”或“七天后”。
+
+`DATE_ADD(NOW(), INTERVAL 7 DAY)`：七天后。
+
+`DATE_SUB('2024-01-01', INTERVAL 1 MONTH)`：一个月前。
+
+### 提取日期部分
+
+`YEAR(date)、MONTH(date)、DAY(date)`：直接提取年、月、日。
+
+`DATEDIFF(d1, d2)`：返回两个日期相差的天数。
+
+`TIMEDIFF(t1, t2)`：返回两个时间相差的时分秒。
+
+## 逻辑控制
+### `IF()` 函数
+语法：`IF(expr1, expr2, expr3)`
+
+逻辑：如果 expr1 为真，返回 expr2；否则返回 expr3。
+
+```
+SELECT name, IF(score >= 60, '及格', '不及格') AS result FROM Students;
+```
+
+### `CASE WHEN` (标准 SQL)
+当逻辑超过两个分支时，`IF` 嵌套会很难看，此时用 `CASE WHEN` 就像程序员的 switch。
+```
+CASE 
+    WHEN condition1 THEN result1
+    WHEN condition2 THEN result2
+    ELSE result3
+END
+```
+示例：
+```
+SELECT amount,
+       CASE 
+           WHEN amount > 1000 THEN '大额'
+           WHEN amount > 500 THEN '中额'
+           ELSE '小额'
+       END AS level
+FROM Orders;
+```
+
+### 空值防御：`IFNULL()` 和 `COALESCE()`
+`IFNULL(val, 0)`：如果 val 是 NULL，就把它变成 0。常用于防止计算报错。
