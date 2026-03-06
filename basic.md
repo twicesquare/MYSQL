@@ -372,3 +372,15 @@ WITH OrderCount AS (
 )
 SELECT * FROM OrderCount WHERE total_orders > 5;
 ```
+## 嵌套查询
+**每个查询必须有自己的别名**
+```
+SELECT MAX(num) AS num
+FROM (
+    SELECT num
+    FROM MyNumbers
+    GROUP BY num
+    HAVING COUNT(num) = 1
+) AS t;
+```
+这里的`AS t`必不可少
