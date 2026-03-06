@@ -81,6 +81,19 @@ CREATE TABLE users (
 | 8 | ORDER BY | 最终排序 | `ORDER BY price DESC`：按某列排队。DESC 降序，ASC 升序。 |
 | 9 | LIMIT | 结果截取 | `LIMIT 5 OFFSET 10`：跳过前 10 行，只取接下来的 5 行（常用于分页）。 |
 
+### `DISTINCT`的应用
+```
+SELECT customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM Product);
+```
+题目提到 Customer 表可能包含重复行（同一个客户可能多次购买同一个产品）。我们只关心他买了多少种产品，而不是买了多少次。
+
+`(SELECT COUNT(*) FROM Product)`
+
+这是一个标量子查询，它计算出 Product 表中一共有多少种产品（即“满分”是多少）。
+
 ## 字符串处理与过滤
 | 知识点 | 关键字 / 语法 | 说明 |
 | :--- | :--- | :--- |
