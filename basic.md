@@ -200,6 +200,19 @@ GROUP BY department            -- 2. 按部门分组
 HAVING AVG(salary) > 5000;     -- 3. 在分组结果中筛选平均分
 ```
 
+where示例
+```
+SELECT 
+    ROUND(AVG(order_date = customer_pref_delivery_date) * 100, 2) AS immediate_percentage
+FROM Delivery
+WHERE (customer_id, order_date) IN (
+    -- 这一步锁定每个顾客的首次订单日期
+    SELECT customer_id, MIN(order_date)
+    FROM Delivery
+    GROUP BY customer_id
+);
+```
+
 ## 标量子查询
 ```
 SELECT 
