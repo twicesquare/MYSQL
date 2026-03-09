@@ -397,3 +397,18 @@ FROM (
 ) AS t;
 ```
 这里的`AS t`必不可少
+
+## IN和OR的用法
+```
+SELECT employee_id, department_id
+FROM Employee
+WHERE primary_flag = 'Y' -- 情况 1：明确标注为直属部门的
+OR employee_id IN (
+    -- 情况 2：只加入了一个部门的员工
+    SELECT employee_id
+    FROM Employee
+    GROUP BY employee_id
+    HAVING COUNT(department_id) = 1
+);
+```
+
