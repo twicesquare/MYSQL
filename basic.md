@@ -382,6 +382,18 @@ WHERE file_name REGEXP '^[A-Z].*[0-9].*\\.txt$'
 
 注意：这里用了 `\\.`，因为单写 `.` 会匹配任何字符（比如 `@leetcode-com` 也会被选中），必须转义。
 
+### `REGEXP_LIKE`
+```
+SELECT *
+FROM Users
+WHERE REGEXP_LIKE(mail, '^[A-Za-z][A-Za-z0-9._-]*@leetcode\\.com$', 'c');
+```
+语法： `REGEXP_LIKE(字段, '正则', '参数')`
+
+参数 `c`：Case-sensitive（区分大小写）
+
+参数 `i`：Case-insensitive（不区分大小写）
+
 ## 核心子句
 
 ### `CASE WHEN`：SQL 里的 if-else
